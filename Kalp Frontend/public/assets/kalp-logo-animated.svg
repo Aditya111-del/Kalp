@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="4096" height="4096" role="img" aria-label="Star app logo dark contrast">
+  <defs>
+    <!-- main diagonal gradient (darker + stronger contrast) -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a1ca8"/>
+      <stop offset="28%" stop-color="#5a1fcf"/>
+      <stop offset="50%" stop-color="#d4145a"/>
+      <stop offset="78%" stop-color="#e24c1a"/>
+      <stop offset="100%" stop-color="#e87d15"/>
+    </linearGradient>
+
+    <!-- stronger magenta center -->
+    <radialGradient id="magentaPush" cx="40%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#d4145a" stop-opacity="0.55"/>
+      <stop offset="40%" stop-color="#d4145a" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#d4145a" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- stronger orange bottom-right -->
+    <radialGradient id="orangePush" cx="82%" cy="82%" r="45%">
+      <stop offset="0%" stop-color="#e85f0f" stop-opacity="0.45"/>
+      <stop offset="55%" stop-color="#e85f0f" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#e85f0f" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- bright glow behind star -->
+    <radialGradient id="starGlow" cx="50%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- background -->
+  <g shape-rendering="geometricPrecision">
+    <rect x="0" y="0" width="1024" height="1024" rx="160" ry="160" fill="url(#bgGrad)"/>
+    <rect x="0" y="0" width="1024" height="1024" rx="160" ry="160" fill="url(#magentaPush)" opacity="1"/>
+    <rect x="0" y="0" width="1024" height="1024" rx="160" ry="160" fill="url(#orangePush)" opacity="1"/>
+  </g>
+
+  <!-- central glow -->
+  <ellipse cx="512" cy="512" rx="240" ry="220" fill="url(#starGlow)"/>
+
+  <!-- star -->
+  <polygon points="512,192 572,448 816,512 572,576 512,832 452,576 208,512 452,448" fill="#ffffff" vector-effect="non-scaling-stroke"/>
+</svg>
