@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "Kalp Frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "Kalp Frontend/build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/Kalp Frontend/build/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/Kalp Frontend/build/index.html"
+    }
+  ],
+  "env": {
+    "REACT_APP_API_URL": "@react_app_api_url",
+    "REACT_APP_WEBSOCKET_URL": "@react_app_websocket_url",
+    "REACT_APP_GOOGLE_CLIENT_ID": "@react_app_google_client_id",
+    "REACT_APP_APP_NAME": "@react_app_app_name",
+    "REACT_APP_ENVIRONMENT": "production"
+  },
+  "build": {
+    "env": {
+      "REACT_APP_API_URL": "@react_app_api_url",
+      "REACT_APP_WEBSOCKET_URL": "@react_app_websocket_url"
+    }
+  }
+}
