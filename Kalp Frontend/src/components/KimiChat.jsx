@@ -13,6 +13,14 @@ import { useAuth } from '../contexts/AuthContext';
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'http://localhost:5000';
 
+// Debug logging
+console.log('🔧 KimiChat Environment Variables:', {
+  REACT_APP_API_URL: process.env.REACT_APP_API_URL,
+  REACT_APP_WEBSOCKET_URL: process.env.REACT_APP_WEBSOCKET_URL,
+  API_BASE,
+  WEBSOCKET_URL
+});
+
 // API Endpoints
 const ENDPOINTS = {
   CHAT_SESSIONS: process.env.REACT_APP_CHAT_SESSIONS_ENDPOINT || '/api/v2/chat/sessions',
