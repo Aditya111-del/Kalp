@@ -11,7 +11,17 @@ export const useAuth = () => {
 };
 
 // API base URL
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3002';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'http://localhost:5000';
+
+// API Endpoints
+const ENDPOINTS = {
+  AUTH_PROFILE: process.env.REACT_APP_AUTH_PROFILE_ENDPOINT || '/api/v2/auth/profile',
+  AUTH_REGISTER: process.env.REACT_APP_AUTH_REGISTER_ENDPOINT || '/api/v2/auth/register',
+  AUTH_LOGIN: process.env.REACT_APP_AUTH_LOGIN_ENDPOINT || '/api/v2/auth/login',
+  AUTH_GOOGLE: process.env.REACT_APP_AUTH_GOOGLE_ENDPOINT || '/api/v2/auth/google',
+  AUTH_LOGOUT: process.env.REACT_APP_AUTH_LOGOUT_ENDPOINT || '/api/auth/logout',
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -29,7 +39,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/v2/auth/profile`, {
+      const response = await fetch(`${API_BASE}${ENDPOINTS.AUTH_PROFILE}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -56,7 +66,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password, confirmPassword) => {
     try {
-      const response = await fetch(`${API_BASE}/api/v2/auth/register`, {
+      const response = await fetch(`${API_BASE}${ENDPOINTS.AUTH_REGISTER}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -91,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Login attempt:', { email, API_BASE });
       
-      const response = await fetch(`${API_BASE}/api/v2/auth/login`, {
+      const response = await fetch(`${API_BASE}${ENDPOINTS.AUTH_LOGIN}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -136,7 +146,7 @@ export const AuthProvider = ({ children }) => {
                 const userObject = JSON.parse(atob(response.credential.split('.')[1]));
                 
                 // Send to backend
-                const backendResponse = await fetch(`${API_BASE}/api/v2/auth/google`, {
+                const backendResponse = await fetch(`${API_BASE}${ENDPOINTS.AUTH_GOOGLE}`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'
@@ -183,7 +193,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // Optional: notify backend about logout
       if (token) {
-        await fetch(`${API_BASE}/api/auth/logout`, {
+        await fetch(`${API_BASE}${ENDPOINTS.AUTH_LOGOUT}`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -202,7 +212,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (updates) => {
     try {
-      const response = await fetch(`${API_BASE}/api/v2/auth/profile`, {
+      const response = await fetch(`${API_BASE}${ENDPOINTS.AUTH_PROFILE}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

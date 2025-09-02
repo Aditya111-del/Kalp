@@ -9,6 +9,18 @@ import Table from './Table';
 import CodeBlock from './CodeBlock';
 import { useAuth } from '../contexts/AuthContext';
 
+// API Configuration
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const WEBSOCKET_URL = process.env.REACT_APP_WEBSOCKET_URL || 'http://localhost:5000';
+
+// API Endpoints
+const ENDPOINTS = {
+  CHAT_SESSIONS: process.env.REACT_APP_CHAT_SESSIONS_ENDPOINT || '/api/v2/chat/sessions',
+  CHAT_HISTORY: process.env.REACT_APP_CHAT_HISTORY_ENDPOINT || '/api/v2/chat/history',
+  CHAT_SESSION: process.env.REACT_APP_CHAT_SESSION_ENDPOINT || '/api/v2/chat/session',
+  CHAT_SEND: process.env.REACT_APP_CHAT_SEND_ENDPOINT || '/api/v2/chat/send',
+};
+
 // Helper function to format table cell content
 const formatTableCellContent = (children) => {
   if (!children) return children;
@@ -111,7 +123,7 @@ const KimiChat = () => {
       return;
     }
 
-    socketRef.current = io('http://localhost:3002');
+    socketRef.current = io(WEBSOCKET_URL);
     
     socketRef.current.on('connect', () => {
       console.log('Connected to WebSocket server');
@@ -245,7 +257,7 @@ const KimiChat = () => {
     setIsLoadingHistory(true);
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:3002/api/v2/chat/sessions', {
+      const response = await fetch(`${API_BASE}${ENDPOINTS.CHAT_SESSIONS}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -271,7 +283,7 @@ const KimiChat = () => {
   const selectSession = async (sessionId) => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:3002/api/v2/chat/history?sessionId=${sessionId}`, {
+      const response = await fetch(`${API_BASE}${ENDPOINTS.CHAT_HISTORY}?sessionId=${sessionId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -304,7 +316,7 @@ const KimiChat = () => {
   const deleteSession = async (sessionId) => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:3002/api/v2/chat/session/${sessionId}`, {
+      const response = await fetch(`${API_BASE}${ENDPOINTS.CHAT_SESSION}/${sessionId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -366,7 +378,7 @@ const KimiChat = () => {
       // Fallback to HTTP API if WebSocket is not available
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch('http://localhost:3002/api/v2/chat/send', {
+        const response = await fetch(`${API_BASE}${ENDPOINTS.CHAT_SEND}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
