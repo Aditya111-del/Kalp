@@ -7,6 +7,7 @@ import rehypeRaw from 'rehype-raw';
 import AnimatedKalpLogo from './AnimatedKalpLogo';
 import Table from './Table';
 import CodeBlock from './CodeBlock';
+import SourcesDisplay from './SourcesDisplay';
 import { useAuth } from '../contexts/AuthContext';
 
 // API Configuration
@@ -383,7 +384,7 @@ const KimiChat = () => {
         max_tokens: 2000
       });
     } else {
-      // Fallback to HTTP API if WebSocket is not available
+      // Fallback to HTTP API with streaming support
       try {
         const token = localStorage.getItem('authToken');
         const response = await fetch(`${API_BASE}${ENDPOINTS.CHAT_SEND}`, {
@@ -398,30 +399,110 @@ const KimiChat = () => {
           })
         });
 
-        const data = await response.json();
-        
-        setIsLoading(false);
-        setIsTyping(false);
-
-        if (data.success) {
-          const aiMessage = {
-            type: 'ai',
-            content: data.message,
-            timestamp: new Date().toISOString(),
-            contextUsed: data.context?.hasContext || false,
-            sessionId: data.sessionId
-          };
-          setMessages(prev => [...prev, aiMessage]);
-          setCurrentSessionId(data.sessionId);
-        } else {
-          const errorMessage = {
-            type: 'ai',
-            content: data.message || 'Sorry, I encountered an error. Please try again.',
-            timestamp: new Date().toISOString(),
-            isError: true
-          };
-          setMessages(prev => [...prev, errorMessage]);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        setIsLoading(false);
+
+        // Create placeholder AI message for streaming
+        const aiMessage = {
+          type: 'ai',
+          content: '',
+          timestamp: new Date().toISOString(),
+          isStreaming: true,
+          sessionId: sessionId
+        };
+        setMessages(prev => [...prev, aiMessage]);
+
+        // Handle Server-Sent Events streaming
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          
+          // Keep the last incomplete line in the buffer
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              try {
+                const parsed = JSON.parse(data);
+
+                if (parsed.type === 'chunk') {
+                  // Update the AI message with new chunk
+                  setMessages(prev => {
+                    const updated = [...prev];
+                    const lastMsg = updated[updated.length - 1];
+                    if (lastMsg && lastMsg.type === 'ai' && lastMsg.isStreaming) {
+                      lastMsg.content += parsed.content;
+                    }
+                    return updated;
+                  });
+                } else if (parsed.type === 'complete') {
+                  // Mark streaming as complete
+                  setIsTyping(false);
+                  setMessages(prev => {
+                    const updated = [...prev];
+                    const lastMsg = updated[updated.length - 1];
+                    if (lastMsg && lastMsg.type === 'ai') {
+                      lastMsg.isStreaming = false;
+                    }
+                    return updated;
+                  });
+                  setCurrentSessionId(parsed.sessionId);
+                } else if (parsed.type === 'error') {
+                  setIsTyping(false);
+                  const errorMessage = {
+                    type: 'ai',
+                    content: parsed.message || 'An error occurred while processing your message.',
+                    timestamp: new Date().toISOString(),
+                    isError: true
+                  };
+                  setMessages(prev => {
+                    const updated = [...prev];
+                    // Remove the streaming message and add error
+                    if (updated[updated.length - 1]?.isStreaming) {
+                      updated.pop();
+                    }
+                    return [...updated, errorMessage];
+                  });
+                }
+              } catch (e) {
+                // Ignore JSON parsing errors for malformed lines
+                console.error('Error parsing SSE data:', e);
+              }
+            }
+          }
+        }
+
+        // Process any remaining data in buffer
+        if (buffer.trim().startsWith('data: ')) {
+          const data = buffer.slice(6);
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.type === 'chunk') {
+              setMessages(prev => {
+                const updated = [...prev];
+                const lastMsg = updated[updated.length - 1];
+                if (lastMsg && lastMsg.type === 'ai' && lastMsg.isStreaming) {
+                  lastMsg.content += parsed.content;
+                }
+                return updated;
+              });
+            }
+          } catch (e) {
+            console.error('Error parsing final SSE data:', e);
+          }
+        }
+
       } catch (error) {
         console.error('Error sending message:', error);
         setIsLoading(false);
@@ -1021,8 +1102,25 @@ const KimiChat = () => {
                                 )
                               }}
                             >
-                              {message.content}
+                              {message.content
+                                .replace(/\n+📌\s*Sources:[\s\S]*$/gi, '')
+                                .replace(/\n+Sources:[\s\S]*$/gi, '')
+                                .replace(/\n+\[\d+\]\s+[^\n]+(?:\n\[\d+\][^\n]+)*/gi, '')}
                             </ReactMarkdown>
+                            {message.isStreaming && (
+                              <style>{`
+                                @keyframes blink {
+                                  0%, 50% { opacity: 1; }
+                                  51%, 100% { opacity: 0; }
+                                }
+                                .streaming-cursor {
+                                  display: inline;
+                                  animation: blink 1s infinite;
+                                }
+                              `}</style>
+                            )}
+                            {message.isStreaming && <span className="streaming-cursor">|</span>}
+                            {!message.isStreaming && <SourcesDisplay message={message.content} />}
                           </div>
                           {message.contextUsed && (
                             <div className="text-xs text-gray-500 mt-2">
