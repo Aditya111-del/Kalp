@@ -7,28 +7,13 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [features] = useState([
-    {
-      icon: '🤖',
-      title: 'AI-Powered Conversations',
-      description: 'Engage with advanced AI that understands context and provides meaningful responses'
-    },
-    {
-      icon: '⚡',
-      title: 'Lightning Fast',
-      description: 'Real-time responses with optimized performance for seamless interaction'
-    },
-    {
-      icon: '🎨',
-      title: 'Beautiful Interface',
-      description: 'Modern, intuitive design with code highlighting and table formatting'
-    },
-    {
-      icon: '🔒',
-      title: 'Secure & Private',
-      description: 'Your conversations are encrypted and your privacy is our priority'
-    }
-  ]);
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Redirect if user is already logged in
   useEffect(() => {
@@ -45,126 +30,155 @@ const LandingPage = () => {
     navigate('/register');
   };
 
-  const scrollToFeatures = () => {
-    document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <AnimatedKalpLogo isAnimating={true} size="w-16 h-16" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="min-h-screen bg-black text-white overflow-hidden relative" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <style>{`
+        ::-webkit-scrollbar { display: none; }
+        
+        @keyframes slideUp {
+          0% { opacity: 0; transform: translateY(10px); }
+          10% { opacity: 1; transform: translateY(0); }
+          80% { opacity: 1; transform: translateY(0); }
+          90% { opacity: 0; transform: translateY(-10px); }
+          100% { opacity: 0; transform: translateY(-10px); }
+        }
+        
+        .line-animate-1 { animation: slideUp 8s infinite; animation-delay: 0s; }
+        .line-animate-2 { animation: slideUp 8s infinite; animation-delay: 1.2s; }
+        .line-animate-3 { animation: slideUp 8s infinite; animation-delay: 2.4s; }
+        .line-animate-4 { animation: slideUp 8s infinite; animation-delay: 3.6s; }
+        .line-animate-5 { animation: slideUp 8s infinite; animation-delay: 4.8s; }
+      `}</style>
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0f0f0f]/80 backdrop-blur-md border-b border-[#2a2a2a]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50">
+        <div className="w-full px-12 py-5 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <AnimatedKalpLogo size="w-8 h-8" />
-            <span className="text-2xl font-bold tracking-wider">KALP</span>
+            <AnimatedKalpLogo size="w-6 h-6" />
+            <span className="text-xs font-bold tracking-widest uppercase text-white">KALP</span>
           </div>
-          <nav className="hidden md:flex items-center space-x-8">
-            <button 
-              onClick={scrollToFeatures}
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Features
-            </button>
-            <a href="#about" className="text-gray-300 hover:text-white transition-colors">About</a>
-            <button
-              onClick={handleSignIn}
-              disabled={isLoading}
-              className="px-6 py-2 bg-gradient-to-r from-[#5a1fcf] to-[#d4145a] rounded-lg font-medium hover:from-[#6b2bdf] hover:to-[#e4256a] transition-all disabled:opacity-50"
-            >
-              Sign In
-            </button>
+          
+          <nav className="hidden lg:flex items-center space-x-14">
+            <button onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })} className="text-xs text-gray-400 hover:text-white transition-colors uppercase tracking-widest font-medium">Features</button>
+            <a href="#about" className="text-xs text-gray-400 hover:text-white transition-colors uppercase tracking-widest font-medium">About</a>
+            <a href="#contact" className="text-xs text-gray-400 hover:text-white transition-colors uppercase tracking-widest font-medium">Contact</a>
           </nav>
+
+          <button
+            onClick={handleSignIn}
+            className="px-5 py-2 text-xs font-bold border border-gray-400 hover:border-white hover:bg-white hover:text-black text-white transition-all duration-300 uppercase tracking-widest"
+          >
+            Try It
+          </button>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="mb-8">
-            <AnimatedKalpLogo isAnimating={true} size="w-24 h-24" />
-          </div>
-          <h1 className="text-7xl md:text-8xl font-bold tracking-wider mb-6 bg-gradient-to-r from-[#5a1fcf] via-[#d4145a] to-[#e87d15] bg-clip-text text-transparent">
-            KALP
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300 mb-4 max-w-3xl mx-auto leading-relaxed">
-            Your Advanced AI Companion for Intelligent Conversations
-          </p>
-          <p className="text-lg text-gray-400 mb-12 max-w-2xl mx-auto">
-            Experience the future of AI interaction with our sophisticated chat interface, 
-            complete with code highlighting, table formatting, and contextual understanding.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <button
-              onClick={handleGetStarted}
-              className="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-[#5a1fcf] to-[#d4145a] rounded-lg font-medium hover:from-[#6b2bdf] hover:to-[#e4256a] transition-all min-w-[200px] justify-center text-white"
-            >
-              <span>Get Started</span>
-            </button>
-            
-            <button
-              onClick={handleSignIn}
-              className="px-8 py-4 border border-[#3a3a3a] rounded-lg font-medium hover:border-[#4a4a4a] hover:bg-[#1a1a1a] transition-all"
-            >
-              Sign In
-            </button>
-            
-            <button
-              onClick={scrollToFeatures}
-              className="px-8 py-4 border border-[#3a3a3a] rounded-lg font-medium hover:border-[#4a4a4a] hover:bg-[#1a1a1a] transition-all"
-            >
-              Explore Features
-            </button>
-          </div>
+      {/* Main Hero Section with Wavy Gradient */}
+      <section className="relative w-full h-screen flex items-center justify-between overflow-hidden pt-20">
+        {/* Animated Wavy SVG Background */}
+        <svg 
+          className="absolute top-0 left-0 w-full h-full"
+          viewBox="0 0 1200 800" 
+          preserveAspectRatio="none"
+          style={{ transform: `translateY(${scrollY * 0.2}px)` }}
+        >
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style={{ stopColor: '#9D4EDD', stopOpacity: 0.8 }} />
+              <stop offset="50%" style={{ stopColor: '#E0AAFF', stopOpacity: 0.6 }} />
+              <stop offset="100%" style={{ stopColor: '#FF006E', stopOpacity: 0.9 }} />
+            </linearGradient>
+            <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style={{ stopColor: '#FF006E', stopOpacity: 0.7 }} />
+              <stop offset="50%" style={{ stopColor: '#FFB703', stopOpacity: 0.8 }} />
+              <stop offset="100%" style={{ stopColor: '#FB5607', stopOpacity: 0.9 }} />
+            </linearGradient>
+            <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style={{ stopColor: '#8338EC', stopOpacity: 0.6 }} />
+              <stop offset="100%" style={{ stopColor: '#3A86FF', stopOpacity: 0.5 }} />
+            </linearGradient>
+          </defs>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-[#5a1fcf] mb-2">10K+</div>
-              <div className="text-gray-400">Active Users</div>
+          {/* Main Wave Shape 1 */}
+          <path
+            d="M 0,200 Q 150,100 300,150 T 600,200 T 900,180 T 1200,150 L 1200,0 L 0,0 Z"
+            fill="url(#grad1)"
+          />
+
+          {/* Wave Shape 2 */}
+          <path
+            d="M 0,300 Q 200,250 400,280 T 800,320 T 1200,300 L 1200,200 Q 900,180 600,200 T 0,200 Z"
+            fill="url(#grad2)"
+          />
+
+          {/* Wave Shape 3 - Bottom Accent */}
+          <path
+            d="M 0,500 Q 100,480 200,500 T 600,520 T 1000,490 T 1200,500 L 1200,800 L 0,800 Z"
+            fill="url(#grad3)"
+            opacity="0.3"
+          />
+        </svg>
+
+        {/* Content - Left Side */}
+        <div className="absolute left-0 top-0 w-1/2 h-full flex flex-col items-start justify-between px-16 py-20 z-10">
+          {/* Logo moved to header - removed from here */}
+          <div></div>
+
+          {/* Bottom left info */}
+          <div className="text-xs text-gray-500 uppercase tracking-wider space-y-2 pb-8">
+            <div className="font-semibold text-gray-600">KALP</div>
+            <div>COMPANY</div>
+            <div>NEWS</div>
+            <div>CONTACT</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Content Section Below Waves */}
+      <section className="w-full bg-black py-32 px-20 flex justify-end z-10">
+        <div className="w-80 space-y-8">
+          <div className="space-y-6">
+            <h1 className="text-5xl font-light leading-tight text-white">
+              Your AI with Live<br />
+              Internet Access
+            </h1>
+            
+            <div className="text-xs text-gray-500 leading-relaxed font-light space-y-0.5 h-24">
+              <div className="line-animate-1">Get real-time answers with</div>
+              <div className="line-animate-2">web search, streaming responses,</div>
+              <div className="line-animate-3">and beautiful source</div>
+              <div className="line-animate-4">attribution. The future of</div>
+              <div className="line-animate-5">intelligent conversation.</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-[#d4145a] mb-2">1M+</div>
-              <div className="text-gray-400">Messages Processed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-[#e87d15] mb-2">99.9%</div>
-              <div className="text-gray-400">Uptime</div>
-            </div>
+
+
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-6 bg-[#1a1a1a]">
+      <section id="features" className="py-32 px-8 bg-black relative z-10">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Powerful Features</h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Discover what makes KALP the most advanced AI chat platform
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="bg-[#2a2a2a] rounded-xl p-6 hover:bg-[#3a3a3a] transition-all group">
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-white">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed">
-                  {feature.description}
-                </p>
+          <h2 className="text-5xl font-light mb-24 text-center">Why Choose KALP</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { icon: '🌐', title: 'Live Web Search', desc: 'Access real-time information from across the internet with every query' },
+              { icon: '⚡', title: 'Instant Streaming', desc: 'Watch responses appear in real-time as they\'re being generated' },
+              { icon: '📚', title: 'Chat Memory', desc: 'Keep your conversation history organized and easily searchable' },
+              { icon: '🔗', title: 'Source Badges', desc: 'Know exactly where information comes from with beautiful attribution' }
+            ].map((feature, idx) => (
+              <div key={idx} className="group p-8 border border-gray-800 hover:border-purple-500/50 transition-all duration-300 hover:bg-purple-950/10">
+                <div className="text-5xl mb-6 group-hover:scale-110 transition-transform">{feature.icon}</div>
+                <h3 className="text-lg font-semibold mb-3 text-white">{feature.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -172,37 +186,51 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Ready to Start Chatting?
-          </h2>
-          <p className="text-xl text-gray-300 mb-12">
-            Join thousands of users who are already experiencing the future of AI conversation.
+      <section className="py-32 px-8 bg-gradient-to-b from-black via-purple-950/10 to-black relative z-10">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-4xl font-light mb-8 text-gray-200">Experience the Future of AI</h2>
+          <p className="text-base text-gray-400 mb-12 leading-relaxed max-w-2xl mx-auto">
+            Join thousands of users already experiencing smarter conversations powered by 
+            real-time internet access and intelligent reasoning.
           </p>
           
           <button
             onClick={handleGetStarted}
-            className="flex items-center space-x-3 px-10 py-5 bg-gradient-to-r from-[#5a1fcf] to-[#d4145a] rounded-xl font-semibold text-lg hover:from-[#6b2bdf] hover:to-[#e4256a] transition-all mx-auto text-white"
+            className="px-12 py-3 bg-white text-black font-semibold hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-sm"
           >
-            <span>Get Started Now</span>
+            Get Started Free
           </button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-[#2a2a2a]">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <AnimatedKalpLogo size="w-6 h-6" />
-              <span className="text-xl font-bold">KALP AI</span>
-            </div>
-            <div className="text-gray-400 text-center md:text-right">
-              <p>&copy; 2024 KALP AI. All rights reserved.</p>
-              <p className="text-sm mt-1">Built with ❤️ for the future of AI conversation</p>
-            </div>
+      {/* Bottom Chat Box Section */}
+      <section className="w-full bg-black py-32 px-20 flex justify-end z-10 border-t border-gray-800">
+        <div className="w-80">
+          <div className="flex items-center gap-3 bg-gray-900/50 rounded-lg p-4 border border-gray-800 hover:border-gray-700 transition-colors">
+            <input
+              type="text"
+              placeholder="Ask me anything..."
+              onClick={handleGetStarted}
+              className="flex-1 bg-transparent text-sm text-white placeholder-gray-600 outline-none"
+            />
+            <button
+              onClick={handleGetStarted}
+              className="text-white hover:text-purple-400 transition-colors text-xl"
+            >
+              →
+            </button>
           </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 px-8 border-t border-gray-800 bg-black relative z-10">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <AnimatedKalpLogo size="w-5 h-5" />
+            <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">KALP AI</span>
+          </div>
+          <p className="text-xs text-gray-700">© 2025 KALP AI. Intelligent conversations redefined.</p>
         </div>
       </footer>
     </div>
