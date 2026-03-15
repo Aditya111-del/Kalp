@@ -28,6 +28,59 @@ const ENDPOINTS = {
   CHAT_SEND: process.env.REACT_APP_CHAT_SEND_ENDPOINT || '/api/v2/chat/send',
 };
 
+// ─── InputBox lives OUTSIDE KimiChat so it is never recreated on re-render.
+// Recreating it inside the parent causes unmount/remount → iOS keyboard dismisses on every keystroke.
+const InputBox = ({ compact = false, inputMessage, onChange, onKeyPress, onSend, isLoading, textareaRef }) => (
+  <div className="bg-[#1f2023] rounded-2xl md:rounded-3xl border border-[#3a3a3a] focus-within:border-[#4a4a4a] transition-colors shadow-2xl">
+    <textarea
+      ref={textareaRef}
+      value={inputMessage}
+      onChange={onChange}
+      onKeyPress={onKeyPress}
+      placeholder="Ask Anything..."
+      className={`w-full bg-transparent ${compact ? 'p-3 md:p-4' : 'p-4 md:p-6'} text-white placeholder-gray-400 resize-none outline-none min-h-[48px] md:min-h-[60px] text-base md:text-lg`}
+      rows={1}
+      // iOS Safari: prevent zoom on focus (font-size >= 16px handles this via CSS,
+      // but explicit font-size inline ensures it even when Tailwind purges the class)
+      style={{ fontSize: '16px', maxHeight: '150px' }}
+    />
+
+    <div className={`flex items-center justify-between ${compact ? 'p-3 md:p-4' : 'p-4 md:p-6'} pt-0`}>
+      <div className="flex items-center space-x-1 md:space-x-4">
+        <button className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-[#2a2a2a]">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </button>
+        <button className="hidden sm:flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-[#2a2a2a]">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span className="text-sm">Researcher</span>
+        </button>
+      </div>
+
+      <div className="flex items-center space-x-2 md:space-x-4">
+        <span className="text-xs md:text-sm text-gray-400 px-2 md:px-3 py-1 bg-[#2a2a2a] rounded-full">K1.5</span>
+        <button className="hidden sm:block p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-[#2a2a2a]">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+          </svg>
+        </button>
+        <button
+          onClick={onSend}
+          disabled={!inputMessage.trim() || isLoading}
+          className={`${compact ? 'p-2' : 'p-2 md:p-3'} bg-white text-black rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg`}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 const KimiChat = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -80,13 +133,13 @@ const KimiChat = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 150) + 'px';
-    }
-  }, [inputMessage]);
+  // Auto-resize textarea — called directly in onChange, NOT in a useEffect.
+  // Using a useEffect here causes React to re-render → textarea remounts → iOS dismisses keyboard.
+  const resizeTextarea = (el) => {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 150) + 'px';
+  };
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -405,56 +458,6 @@ const KimiChat = () => {
     return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  // Shared input box component
-  const InputBox = ({ compact = false }) => (
-    <div className={`bg-[#1f2023] rounded-2xl md:rounded-3xl border border-[#3a3a3a] focus-within:border-[#4a4a4a] transition-colors shadow-2xl`}>
-      <textarea
-        ref={textareaRef}
-        value={inputMessage}
-        onChange={(e) => setInputMessage(e.target.value)}
-        onKeyPress={handleKeyPress}
-        placeholder="Ask Anything..."
-        className={`w-full bg-transparent ${compact ? 'p-3 md:p-4' : 'p-4 md:p-6'} text-white placeholder-gray-400 resize-none outline-none min-h-[48px] md:min-h-[60px] max-h-[150px] text-base md:text-lg`}
-        rows={1}
-        style={{ height: 'auto' }}
-      />
-
-      <div className={`flex items-center justify-between ${compact ? 'p-3 md:p-4' : 'p-4 md:p-6'} pt-0`}>
-        <div className="flex items-center space-x-1 md:space-x-4">
-          <button className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-[#2a2a2a]">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-          </button>
-          <button className="hidden sm:flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-[#2a2a2a]">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <span className="text-sm">Researcher</span>
-          </button>
-        </div>
-
-        <div className="flex items-center space-x-2 md:space-x-4">
-          <span className="text-xs md:text-sm text-gray-400 px-2 md:px-3 py-1 bg-[#2a2a2a] rounded-full">K1.5</span>
-          <button className="hidden sm:block p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-[#2a2a2a]">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-            </svg>
-          </button>
-          <button
-            onClick={handleSendMessage}
-            disabled={!inputMessage.trim() || isLoading}
-            className={`${compact ? 'p-2' : 'p-2 md:p-3'} bg-white text-black rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="flex h-screen h-[100dvh] bg-[#161717] text-white overflow-hidden">
 
@@ -726,7 +729,14 @@ const KimiChat = () => {
 
                 {/* Prompt Input */}
                 <div className="w-full max-w-2xl md:max-w-4xl mb-6 md:mb-8">
-                  <InputBox />
+                  <InputBox
+                    inputMessage={inputMessage}
+                    onChange={(e) => { setInputMessage(e.target.value); resizeTextarea(e.target); }}
+                    onKeyPress={handleKeyPress}
+                    onSend={handleSendMessage}
+                    isLoading={isLoading}
+                    textareaRef={textareaRef}
+                  />
                 </div>
 
                 {/* Suggestions - scrollable on mobile */}
@@ -905,7 +915,15 @@ const KimiChat = () => {
               {messages.length > 0 && (
                 <div className="sticky bottom-0 px-3 md:px-6 py-3 md:py-6 bg-[#0f1011] border-t border-[#2a2a2a] md:border-0">
                   <div className="max-w-4xl mx-auto">
-                    <InputBox compact={true} />
+                    <InputBox
+                      compact={true}
+                      inputMessage={inputMessage}
+                      onChange={(e) => { setInputMessage(e.target.value); resizeTextarea(e.target); }}
+                      onKeyPress={handleKeyPress}
+                      onSend={handleSendMessage}
+                      isLoading={isLoading}
+                      textareaRef={textareaRef}
+                    />
                   </div>
                 </div>
               )}
