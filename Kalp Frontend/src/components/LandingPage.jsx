@@ -8,6 +8,7 @@ const LandingPage = () => {
   const { user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -59,9 +60,9 @@ const LandingPage = () => {
       `}</style>
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="w-full px-12 py-5 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <AnimatedKalpLogo size="w-6 h-6" />
+        <div className="w-full px-4 md:px-12 py-3 md:py-5 flex items-center justify-between">
+          <div className="flex items-center space-x-2 md:space-x-3">
+            <AnimatedKalpLogo size="w-5 h-5 md:w-6 md:h-6" />
             <span className="text-xs font-bold tracking-widest uppercase text-white">KALP</span>
           </div>
           
@@ -71,17 +72,43 @@ const LandingPage = () => {
             <a href="#contact" className="text-xs text-gray-400 hover:text-white transition-colors uppercase tracking-widest font-medium">Contact</a>
           </nav>
 
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden text-white text-xl"
+          >
+            ☰
+          </button>
+
+          {/* Desktop Try It Button */}
           <button
             onClick={handleSignIn}
-            className="px-5 py-2 text-xs font-bold border border-gray-400 hover:border-white hover:bg-white hover:text-black text-white transition-all duration-300 uppercase tracking-widest"
+            className="hidden md:block px-5 py-2 text-xs font-bold border border-gray-400 hover:border-white hover:bg-white hover:text-black text-white transition-all duration-300 uppercase tracking-widest"
           >
             Try It
           </button>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-black/95 border-b border-gray-800">
+            <div className="px-4 py-4 space-y-3">
+              <button onClick={() => { document.getElementById('features').scrollIntoView({ behavior: 'smooth' }); setMobileMenuOpen(false); }} className="block w-full text-left text-xs text-gray-400 hover:text-white transition-colors uppercase tracking-widest font-medium py-2">Features</button>
+              <a href="#about" className="block text-xs text-gray-400 hover:text-white transition-colors uppercase tracking-widest font-medium py-2">About</a>
+              <a href="#contact" className="block text-xs text-gray-400 hover:text-white transition-colors uppercase tracking-widest font-medium py-2">Contact</a>
+              <button
+                onClick={() => { handleSignIn(); setMobileMenuOpen(false); }}
+                className="w-full px-4 py-2 text-xs font-bold border border-gray-400 hover:border-white hover:bg-white hover:text-black text-white transition-all duration-300 uppercase tracking-widest"
+              >
+                Try It
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main Hero Section with Wavy Gradient */}
-      <section className="relative w-full h-screen flex items-center justify-between overflow-hidden pt-20">
+      <section className="relative w-full h-screen flex items-center justify-between overflow-hidden pt-12 md:pt-20">
         {/* Animated Wavy SVG Background */}
         <svg 
           className="absolute top-0 left-0 w-full h-full"
@@ -126,8 +153,8 @@ const LandingPage = () => {
           />
         </svg>
 
-        {/* Content - Left Side */}
-        <div className="absolute left-0 top-0 w-1/2 h-full flex flex-col items-start justify-between px-16 py-20 z-10">
+        {/* Content - Left Side - Hidden on Mobile */}
+        <div className="hidden md:flex absolute left-0 top-0 w-1/2 h-full flex-col items-start justify-between px-8 lg:px-16 py-20 z-10">
           {/* Logo moved to header - removed from here */}
           <div></div>
 
@@ -142,10 +169,10 @@ const LandingPage = () => {
       </section>
 
       {/* Content Section Below Waves */}
-      <section className="w-full bg-black py-32 px-20 flex justify-end z-10">
-        <div className="w-80 space-y-8">
+      <section className="w-full bg-black py-16 md:py-32 px-4 md:px-20 flex justify-center md:justify-end z-10">
+        <div className="w-full md:w-80 space-y-8">
           <div className="space-y-6">
-            <h1 className="text-5xl font-light leading-tight text-white">
+            <h1 className="text-3xl md:text-5xl font-light leading-tight text-white">
               Your AI with Live<br />
               Internet Access
             </h1>
@@ -164,21 +191,21 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-32 px-8 bg-black relative z-10">
+      <section id="features" className="py-16 md:py-32 px-4 md:px-8 bg-black relative z-10">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-5xl font-light mb-24 text-center">Why Choose KALP</h2>
+          <h2 className="text-3xl md:text-5xl font-light mb-12 md:mb-24 text-center">Why Choose KALP</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {[
               { icon: '🌐', title: 'Live Web Search', desc: 'Access real-time information from across the internet with every query' },
               { icon: '⚡', title: 'Instant Streaming', desc: 'Watch responses appear in real-time as they\'re being generated' },
               { icon: '📚', title: 'Chat Memory', desc: 'Keep your conversation history organized and easily searchable' },
               { icon: '🔗', title: 'Source Badges', desc: 'Know exactly where information comes from with beautiful attribution' }
             ].map((feature, idx) => (
-              <div key={idx} className="group p-8 border border-gray-800 hover:border-purple-500/50 transition-all duration-300 hover:bg-purple-950/10">
-                <div className="text-5xl mb-6 group-hover:scale-110 transition-transform">{feature.icon}</div>
-                <h3 className="text-lg font-semibold mb-3 text-white">{feature.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
+              <div key={idx} className="group p-6 md:p-8 border border-gray-800 hover:border-purple-500/50 transition-all duration-300 hover:bg-purple-950/10">
+                <div className="text-4xl md:text-5xl mb-6 group-hover:scale-110 transition-transform">{feature.icon}</div>
+                <h3 className="text-base md:text-lg font-semibold mb-3 text-white">{feature.title}</h3>
+                <p className="text-xs md:text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -186,17 +213,17 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 px-8 bg-gradient-to-b from-black via-purple-950/10 to-black relative z-10">
+      <section className="py-16 md:py-32 px-4 md:px-8 bg-gradient-to-b from-black via-purple-950/10 to-black relative z-10">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-light mb-8 text-gray-200">Experience the Future of AI</h2>
-          <p className="text-base text-gray-400 mb-12 leading-relaxed max-w-2xl mx-auto">
+          <h2 className="text-2xl md:text-4xl font-light mb-6 md:mb-8 text-gray-200">Experience the Future of AI</h2>
+          <p className="text-sm md:text-base text-gray-400 mb-8 md:mb-12 leading-relaxed max-w-2xl mx-auto px-4">
             Join thousands of users already experiencing smarter conversations powered by 
             real-time internet access and intelligent reasoning.
           </p>
           
           <button
             onClick={handleGetStarted}
-            className="px-12 py-3 bg-white text-black font-semibold hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-sm"
+            className="px-8 md:px-12 py-2 md:py-3 bg-white text-black font-semibold hover:bg-gray-100 transition-all duration-300 uppercase tracking-widest text-xs md:text-sm"
           >
             Get Started Free
           </button>
@@ -204,9 +231,9 @@ const LandingPage = () => {
       </section>
 
       {/* Bottom Chat Box Section */}
-      <section className="w-full bg-black py-32 px-20 flex justify-end z-10 border-t border-gray-800">
-        <div className="w-80">
-          <div className="flex items-center gap-3 bg-gray-900/50 rounded-lg p-4 border border-gray-800 hover:border-gray-700 transition-colors">
+      <section className="w-full bg-black py-16 md:py-32 px-4 md:px-20 flex justify-center md:justify-end z-10 border-t border-gray-800">
+        <div className="w-full md:w-80">
+          <div className="flex items-center gap-3 bg-gray-900/50 rounded-lg p-3 md:p-4 border border-gray-800 hover:border-gray-700 transition-colors">
             <input
               type="text"
               placeholder="Ask me anything..."
@@ -215,7 +242,7 @@ const LandingPage = () => {
             />
             <button
               onClick={handleGetStarted}
-              className="text-white hover:text-purple-400 transition-colors text-xl"
+              className="text-white hover:text-purple-400 transition-colors text-xl flex-shrink-0"
             >
               →
             </button>
@@ -224,13 +251,13 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-8 border-t border-gray-800 bg-black relative z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <AnimatedKalpLogo size="w-5 h-5" />
+      <footer className="py-8 md:py-12 px-4 md:px-8 border-t border-gray-800 bg-black relative z-10">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center space-x-2 md:space-x-3">
+            <AnimatedKalpLogo size="w-4 h-4 md:w-5 md:h-5" />
             <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">KALP AI</span>
           </div>
-          <p className="text-xs text-gray-700">© 2025 KALP AI. Intelligent conversations redefined.</p>
+          <p className="text-xs text-gray-700 text-center md:text-right">© 2025 KALP AI. Intelligent conversations redefined.</p>
         </div>
       </footer>
     </div>
